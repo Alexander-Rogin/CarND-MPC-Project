@@ -3,6 +3,27 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Implementation details
+
+### The Model
+The model consists of state variables such as vehicle's x and x position, yaw angle psi and velocity v. It also includes position error (cross track error, CTE) and angle error (EPSI). The model takes into consideration vehicle's state and actuators steering angle (delta) and acceleration (a) from one step and outputs actuator values, throttle and steering angle, for the next step. The following equations are used for calculations based on timestamps:
+* x[t+1] = x[t] + v[t] * cos(psi[t]) * dt
+* y[t+1] = y[t] + v[t] * sin(psi[t]) * dt
+* psi[t+1] = psi[t] + v[t] / Lf * delta * dt
+* cte[t+1] = f(x[t]) - y[t] + v[t] * sin(epsi[t]) * dt
+* epsi[t+1] = psi[t] - psi_des[t] + v[t] / Lf * delta * dt
+
+### Timestep Length and Elapsed Duration (N & dt)
+N and dt together define the prediction horizon. It should be long enough but not too long. In this implementation N was set to 10 and dt was set to 0.15. This gave quite good performance in terms of vehicle behavior and computation cost. Another reason for setting dt=0.15 was the latency issue addressed below. There were many other values tried such as 20/0.1, 20/0.05, 10/0.05 etc.
+
+### Polynomial Fitting and MPC Preprocessing
+I used preprocessing described during the Q&A session, i.e. changing waypoints' coordinates to vehicle's coordinate system.
+Third-degree polynomial was used to fit the waypoints.
+
+### Model Predictive Control with Latency
+In order to overcome the 100-millisecond-second latency, a greater value of dt was chosen, in particular dt=0.15 worked very well for me.
+
+
 ## Dependencies
 
 * cmake >= 3.5
