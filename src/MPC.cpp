@@ -21,7 +21,7 @@ double dt = 0.15;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-const double ref_v = 40;
+const double ref_v = 100;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -51,25 +51,21 @@ class FG_eval {
 
     // The part of the cost based on the reference state.
     for (size_t t = 0; t < N; t++) {
-      fg[0] += 2000 * CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += 2000 * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += 50 * CppAD::pow(vars[v_start + t] - ref_v, 2);
-      // CppAD::AD<double> v_diff = vars[v_start + t] - ref_v;
-      // if (v_diff < 0) {
-      //   fg[0] += 500 * CppAD::pow(v_diff, 2);
-      // }
+      fg[0] += 1000 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 1000 * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; t++) {
-      fg[0] += 10 * CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 100 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 100 * CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
-      fg[0] += 500 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += 10 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += 100 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     // Initial constraints
@@ -161,12 +157,12 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     vars[i] = 0;
   }
   // Initial state
-  // vars[x_start] = x;
-  // vars[y_start] = y;
-  // vars[psi_start] = psi;
-  // vars[v_start] = v;
-  // vars[cte_start] = cte;
-  // vars[epsi_start] = epsi;
+  vars[x_start] = x;
+  vars[y_start] = y;
+  vars[psi_start] = psi;
+  vars[v_start] = v;
+  vars[cte_start] = cte;
+  vars[epsi_start] = epsi;
 
   Dvector vars_lowerbound(n_vars);
   Dvector vars_upperbound(n_vars);
