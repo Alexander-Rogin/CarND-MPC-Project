@@ -6,8 +6,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 15;
-double dt = 0.1;
+size_t N = 10;
+double dt = 0.15;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -21,7 +21,7 @@ double dt = 0.1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-const double ref_v = 25;
+const double ref_v = 40;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -53,7 +53,7 @@ class FG_eval {
     for (size_t t = 0; t < N; t++) {
       fg[0] += 2000 * CppAD::pow(vars[cte_start + t], 2);
       fg[0] += 2000 * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += 100 * CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += 50 * CppAD::pow(vars[v_start + t] - ref_v, 2);
       // CppAD::AD<double> v_diff = vars[v_start + t] - ref_v;
       // if (v_diff < 0) {
       //   fg[0] += 500 * CppAD::pow(v_diff, 2);
@@ -62,14 +62,14 @@ class FG_eval {
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 10 * CppAD::pow(vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
       fg[0] += 500 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += 10 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     // Initial constraints
@@ -233,8 +233,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   ok &= solution.status == CppAD::ipopt::solve_result<Dvector>::success;
 
   // Cost
-  auto cost = solution.obj_value;
-  std::cout << "Cost " << cost << std::endl;
+  // auto cost = solution.obj_value;
+  // std::cout << "Cost " << cost << std::endl;
 
   // TODO: Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
